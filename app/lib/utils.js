@@ -2,7 +2,7 @@ import vision from '@google-cloud/vision';
 import OpenAI from 'openai';
 import axios from 'axios';
 
-const googleCredentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+const googleCredentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 const visionClient = new vision.ImageAnnotatorClient({
     credentials: googleCredentials
   });
