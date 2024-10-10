@@ -2,7 +2,10 @@ import vision from '@google-cloud/vision';
 import OpenAI from 'openai';
 import axios from 'axios';
 
-const visionClient = new vision.ImageAnnotatorClient();
+const googleCredentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+const visionClient = new vision.ImageAnnotatorClient({
+    credentials: googleCredentials
+  });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function extractTextFromImage(imageUrl) {
