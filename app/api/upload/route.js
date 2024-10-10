@@ -1,38 +1,29 @@
+import { NextResponse } from 'next/server';
 import { supabase } from '../../lib/supabaseClient';
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-};
+export const runtime = 'edge'; // Optional: Use Edge runtime
+export const dynamic = 'force-dynamic'; // Optional: Force dynamic rendering
 
-export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    const { image } = req.body;
+export async function POST(req) {
+  try {
+    const { image } = await req.json();
 
-    try {
-      const { data, error } = await supabase.storage
-        .from('bottle-images')
-        .upload(`${Date.now()}.jpg`, Buffer.from(image.split(',')[1], 'base64'), {
-          contentType: 'image/jpeg',
-        });
+    const { data, error } = await supabase.storage
+      .from('bottle-images')
+      .upload(`${Date.now()}.jpg`, Buffer.from(image.split(',')[1], 'base64'), {
+        contentType: 'image/jpeg',
+      });
 
-      if (error) throw error;
-      
-      const { publicURL, error: urlError } = supabase.storage
-        .from('bottle-images')
-        .getPublicUrl(data.path);
+    if (error) throw error;
+    
+    const { data: publicUrlData, error: urlError } = supabase.storage
+      .from('bottle-images')
+      .getPublicUrl(data.path);
 
-      if (urlError) throw urlError;
+    if (urlError) throw urlError;
 
-      res.status(200).json({ url: publicURL });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  } else {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    return NextResponse.json({ url: publicUrlData.publicUrl });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

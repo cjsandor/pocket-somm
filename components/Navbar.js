@@ -35,8 +35,8 @@ export default function Navbar() {
   return (
     <nav className="bg-gray-800 text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
-        <Link href="/" className="text-xl font-bold">
-          Data Analyzer
+        <Link href="/" className="text-xl font-bold text-white">
+          Pocket Sommelier
         </Link>
         <div className="relative" ref={dropdownRef}>
           <button
