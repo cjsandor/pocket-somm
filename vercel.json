@@ -1,7 +1,7 @@
 {
     "functions": {
       "api/analyze": {
-        "maxDuration": 90
+        "maxDuration": 60
       }
     }
   }
