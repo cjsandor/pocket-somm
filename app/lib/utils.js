@@ -2,10 +2,29 @@ import vision from '@google-cloud/vision';
 import OpenAI from 'openai';
 import axios from 'axios';
 
-const googleCredentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+let googleCredentials;
+try {
+  const rawCredentials = process.env.GOOGLE_CREDENTIALS || '{}';
+
+  const cleanedCredentials = rawCredentials.replace(/\\n/g, '\\n')
+                                           .replace(/\n/g, '\\n')
+                                           .replace(/\r/g, '\\r')
+                                           .replace(/\t/g, '\\t');
+  
+  googleCredentials = JSON.parse(cleanedCredentials);
+  
+
+  if (!googleCredentials.client_email) {
+    throw new Error('client_email is missing from GOOGLE_CREDENTIALS');
+  }
+} catch (error) {
+  console.error('Error parsing or validating GOOGLE_CREDENTIALS:', error);
+}
+
 const visionClient = new vision.ImageAnnotatorClient({
     credentials: googleCredentials
   });
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function extractTextFromImage(imageUrl) {
@@ -46,7 +65,7 @@ export function transformToSupabaseFields(extractedInfo, ocrText) {
 
 export async function searchWebAndExtractInfo(text) {
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     messages: [
       {
         role: "system",

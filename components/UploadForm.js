@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react';
 import { supabase } from '../app/lib/supabaseClient';
 
-export default function UploadForm({ setResults }) {
+export default function UploadForm({ onAnalysis }) {
   const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleDragEnter = (e) => {
@@ -42,39 +43,35 @@ export default function UploadForm({ setResults }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) return;
-  
+    if (!file) {
+      setError('Please select a file to upload');
+      return;
+    }
+
     setUploading(true);
+    setError(null);
+
     try {
-      console.log('Uploading file:', file.name);
-      
-      // Upload file to Supabase Storage
       const fileName = `${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
+      const { data, error: uploadError } = await supabase.storage
         .from('bottle-images')
         .upload(fileName, file);
-  
-      if (error) {
-        console.error('Storage Error:', error);
-        throw error;
-      }
-  
-      console.log('File uploaded successfully:', data);
-  
-      // Get public URL of uploaded file
+
+      if (uploadError) throw uploadError;
+
       const { data: publicUrlData, error: urlError } = supabase.storage
         .from('bottle-images')
         .getPublicUrl(data.path);
-  
+
       if (urlError) {
         console.error('URL Error:', urlError);
         throw urlError;
       }
-  
-      const publicURL = publicUrlData.publicUrl;  // Add this line
-  
+
+      const publicURL = publicUrlData.publicUrl;
+
       console.log('Public URL:', publicURL);
-  
+
       // Call API to analyze image
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -90,7 +87,6 @@ export default function UploadForm({ setResults }) {
   
       const analysisResult = await response.json();
       console.log('Analysis Result:', analysisResult);
-      setResults(analysisResult);
   
       // Save results to Supabase database
       const { data: insertData, error: dbError } = await supabase
@@ -110,10 +106,10 @@ export default function UploadForm({ setResults }) {
       if (dbError) throw dbError;
 
       console.log('Data saved successfully:', insertData);
-
+      await onAnalysis(publicURL);
     } catch (error) {
       console.error('Error:', error);
-      alert('Error uploading file: ' + error.message);
+      setError(`Error uploading file: ${error.message}`);
     } finally {
       setUploading(false);
     }
@@ -135,7 +131,7 @@ export default function UploadForm({ setResults }) {
           >
             <div className="mb-4">
               <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <p className="text-gray-600">Drag & drop your wine label image here, or click to select</p>
@@ -167,6 +163,7 @@ export default function UploadForm({ setResults }) {
             {uploading ? 'Analyzing...' : 'Analyze Label'}
           </button>
         </form>
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
     </div>
   );

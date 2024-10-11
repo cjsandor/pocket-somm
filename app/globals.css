@@ -7,7 +7,7 @@ html, body {
 }
 
 body {
-  @apply bg-gray-100 text-gray-900 text-base;
+  @apply bg-gray-100 text-gray-900 text-base antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -27,7 +27,7 @@ h3 {
 }
 
 a {
-  @apply text-blue-600 hover:text-blue-800;
+  @apply text-blue-600 hover:text-blue-800 transition duration-300;
 }
 
 .btn {
@@ -46,4 +46,23 @@ a {
   .container {
     @apply px-4;
   }
+}
+
+/* Add smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Improve form input styles */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+/* Add transitions for better interactivity */
+button,
+a {
+  @apply transition-all duration-300 ease-in-out;
 }
