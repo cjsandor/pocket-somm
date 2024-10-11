@@ -2,28 +2,21 @@ import vision from '@google-cloud/vision';
 import OpenAI from 'openai';
 import axios from 'axios';
 
-let googleCredentials;
+let apiKey;
+
 try {
-  const rawCredentials = process.env.NEXT_PUBLIC_GOOGLE_CREDENTIALS || '{}';
-
-  const cleanedCredentials = rawCredentials.replace(/\\n/g, '\\n')
-                                           .replace(/\n/g, '\\n')
-                                           .replace(/\r/g, '\\r')
-                                           .replace(/\t/g, '\\t');
+  apiKey = process.env.NEXT_PUBLIC_GOOGLE_KEY;
   
-  googleCredentials = JSON.parse(cleanedCredentials);
-  
-
-  if (!googleCredentials.client_email) {
-    throw new Error('client_email is missing from GOOGLE_CREDENTIALS');
+  if (!apiKey) {
+    throw new Error('NEXT_PUBLIC_GOOGLE_API_KEY is missing from environment variables');
   }
 } catch (error) {
-  console.error('Error parsing or validating GOOGLE_CREDENTIALS:', error);
+  console.error('Error retrieving Google API key:', error);
 }
 
 const visionClient = new vision.ImageAnnotatorClient({
-    credentials: googleCredentials
-  });
+  apiKey: apiKey
+});
 
 const openai = new OpenAI({ apiKey: process.env.NEXT_OPENAI_API_KEY });
 
