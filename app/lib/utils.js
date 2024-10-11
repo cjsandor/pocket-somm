@@ -18,7 +18,7 @@ const visionClient = new vision.ImageAnnotatorClient({
   apiKey: apiKey
 });
 
-const openai = new OpenAI({ apiKey: process.env.NEXT_OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
 
 export async function extractTextFromImage(imageUrl) {
   const [result] = await visionClient.textDetection(imageUrl);
