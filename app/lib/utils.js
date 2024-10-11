@@ -4,7 +4,7 @@ import axios from 'axios';
 
 let googleCredentials;
 try {
-  const rawCredentials = process.env.GOOGLE_CREDENTIALS || '{}';
+  const rawCredentials = process.env.NEXT_PUBLIC_GOOGLE_CREDENTIALS || '{}';
 
   const cleanedCredentials = rawCredentials.replace(/\\n/g, '\\n')
                                            .replace(/\n/g, '\\n')
@@ -25,7 +25,7 @@ const visionClient = new vision.ImageAnnotatorClient({
     credentials: googleCredentials
   });
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.NEXT_OPENAI_API_KEY });
 
 export async function extractTextFromImage(imageUrl) {
   const [result] = await visionClient.textDetection(imageUrl);
